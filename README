@@ -1,0 +1,78 @@
+pcu
+----------
+
+pcu uses the new cachestat system call to efficiently report page cache usage
+statistics for files on disk. You can point pcu to any filepath and quickly
+learn which files have been cached, if any have been recently evicted from the
+page cache, or which files are dirty.
+
+Requirements
+----------
+Your Linux kernel must be version 6.5 or newer, and as of right now this tool
+only runs on x86 CPUs. Additionally, special file types like hard or soft links
+are almost certainly not handled correctly at the moment.
+
+Build
+----------
+You can build this tool by running "go build" in the root directory.
+
+Sample Output
+----------
+$ pcu -format=size -summarize=directory=1 /usr/local/go
+Path                  Cache     Dirty     Writeback    Evicted    Recently Evicted
+
+/usr/local/go/api     0B        0B        0B           0B         0B
+/usr/local/go/bin     11MB      0B        0B           0B         0B
+/usr/local/go/doc     0B        0B        0B           0B         0B
+/usr/local/go/lib     0B        0B        0B           0B         0B
+/usr/local/go/misc    0B        0B        0B           0B         0B
+/usr/local/go/pkg     34MB      0B        0B           0B         0B
+/usr/local/go/src     13MB      0B        0B           0B         0B
+/usr/local/go/test    0B        0B        0B           0B         0B
+/usr/local/go         60MB      0B        0B           0B         0B
+
+Usage
+----------
+pcu [OPTIONS] [PATH]
+
+Retrieve page cache usage statistics
+
+OPTIONS:
+        -h, -help
+                Print this message
+
+        -summarize=<METHOD>
+                Set the unit of aggregation
+
+                Valid methods include:
+
+                        file
+                                All individual files will have their statistics reported
+
+                        directory[=<DEPTH>]
+                                Only directories will have their aggregate statistics
+                                reported. An optional integer depth parameter can be set
+                                that limits reporting to directories above a certain depth.
+                                For example, if we're examining a filepath ./abc/123/def/456
+                                and we set -summarize=directory=2, only ./abc and ./abc/123
+                                will have statistics reported.
+
+                        total
+                                Only the total sum of all files at the current path will be
+                                reported
+
+        -format=<FORMAT>
+                Set the statistics format
+
+                Valid formats include:
+
+                        count
+
+                                All numbers are reported in terms of page count
+
+                        -size
+
+                                All numbers are reported in terms of their size in bytes
+
+        -human-readable
+                When format=size, print sizes in easier to read format
